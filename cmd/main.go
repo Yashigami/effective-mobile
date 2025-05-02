@@ -1,16 +1,13 @@
 package main
 
 import (
+	"effective-mobail/internal/config"
 	"log"
 	"net/http"
-	"os"
 )
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
+	cfg := config.LoadConfig() // Загружаю конфиг из .env
 
 	// Простая маршрутизация
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -19,8 +16,8 @@ func main() {
 
 	})
 
-	log.Println("Сервер запущен на порту:", port)
-	err := http.ListenAndServe(":"+port, nil)
+	log.Println("Сервер запущен на порту:", cfg.Port)
+	err := http.ListenAndServe(":"+cfg.Port, nil)
 	if err != nil {
 		log.Fatal("не удалось запустить сервер: %v", err)
 	}
