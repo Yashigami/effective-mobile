@@ -2,12 +2,17 @@ package main
 
 import (
 	"effective-mobail/internal/config"
+	"effective-mobail/internal/storage"
 	"log"
 	"net/http"
 )
 
 func main() {
 	cfg := config.LoadConfig() // Загружаю конфиг из .env
+
+	// Инициализирую подключение к БД
+	db := storage.InitPostgres(cfg)
+	_ = db
 
 	// Простая маршрутизация
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
