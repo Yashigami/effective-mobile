@@ -23,11 +23,14 @@ func main() {
 	})
 
 	http.HandleFunc("/people", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
+		switch r.Method {
+		case http.MethodPost:
 			h.CreatePerson(w, r)
-			return
+		case http.MethodGet:
+			h.GetPeople(w, r)
+		default:
+			http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		}
-		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 	})
 
 	log.Println("Сервер запущен на порту:", cfg.Port)

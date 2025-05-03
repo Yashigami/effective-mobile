@@ -3,11 +3,74 @@ package handler
 import (
 	"effective-mobail/internal/model"
 	"encoding/json"
+	"fmt"
 	"gorm.io/gorm"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
+
+// GetPeople обрабатывает GET-запросна получение списка людей
+func (h *PeopleHandler) GetPeople(w http.ResponseWriter, r *http.Request) {
+	var people []model.Person // сюда загрузим результат
+	var total int64
+
+	// Получаем query-параметры
+	q := r.URL.Query()
+
+	// Базовый запрос
+	db := h.DB.Model(&model.Person{})
+
+	// Фильтрация
+	if name := q.Get("name"); name != "" {
+		db = db.Where("name ILIKE ?", "%"+name+"%")
+	}
+	if surname := q.Get("surname"); surname != "" {
+		db = db.Where("surname ILIKE ?", "%"+surname+"%")
+	}
+	if gender := q.Get("gender"); gender != "" {
+		db = db.Where("gender = ?", gender)
+	}
+	if nationality := q.Get("nationality"); nationality != "" {
+		db = db.Where("nationality = ?", nationality)
+	}
+
+	// Подсчет для общего количества (для фронта)
+	db.Count(&total)
+
+	// Пагинация
+	limit := 10
+	offset := 0
+	if val := q.Get("limit"); val != "" {
+		fmt.Sscanf(val, "%d", &limit)
+	}
+	if val := q.Get("offset"); val != "" {
+		fmt.Sscanf(val, "%d", &offset)
+	}
+
+	// Применяем limit/offset
+	db = db.Limit(limit).Offset(offset)
+
+	// Выполняем запрос
+	if err := db.Order("name").Find(&people).Error; err != nil {
+		http.Error(w, "Ошибка при получение данных", http.StatusInternalServerError)
+		return
+	}
+
+	// Формируем и отправляем ответ
+	response := map[string]interface{}{
+		"total":  total,
+		"people": people,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	log.Printf("Отправляем ответ: %+v\n", response)
+
+	// отправка JSON
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("Ошибка кодирования JSON: %v\n", err)
+		http.Error(w, "Ошибка при отправке ответа", http.StatusInternalServerError)
+	}
+}
 
 // Обертка с доступом к БД
 type PeopleHandler struct {
