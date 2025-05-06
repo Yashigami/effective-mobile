@@ -8,9 +8,13 @@ import (
 	"strconv"
 )
 
-// Эндпоинт DELETE /people/{id}
-// DeletePerson удаляет человека по ID
-
+// @Summary Удалить человека
+// @Description Удаляет человека по ID
+// @Param id path int true "ID человека"
+// @Success 200 {string} string "Успешно удалено"
+// @Failure 404 {string} string "Человек не найден"
+// @Failure 500 {string} string "Ошибка при удалении"
+// @Router /people/{id} [delete]
 func (h *PeopleHandler) DeletePerson(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)                 // Получаю путь параметры
 	id, err := strconv.Atoi(vars["id"]) // Преобразуем ID из строки в int
@@ -29,8 +33,17 @@ func (h *PeopleHandler) DeletePerson(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Удаление успешно"))
 }
 
-//PUT /people/{id}
-
+// @Summary Обновить данные человека
+// @Description Обновляет информацию о человеке по ID
+// @Accept json
+// @Produce json
+// @Param id path int true "ID человека"
+// @Param person body model.Person true "Обновлённые данные"
+// @Success 200 {object} model.Person
+// @Failure 400 {string} string "Неверные данные"
+// @Failure 404 {string} string "Человек не найден"
+// @Failure 500 {string} string "Внутренняя ошибка сервера"
+// @Router /people/{id} [put]
 func (h *PeopleHandler) UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])

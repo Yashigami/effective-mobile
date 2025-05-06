@@ -10,6 +10,12 @@ import (
 	"net/http"
 )
 
+// @Summary Получить список людей
+// @Description Возвращает список всех людей из базы данных
+// @Produce json
+// @Success 200 {array} model.Person
+// @Failure 500 {string} string "Ошибка при получении данных"
+// @Router /people [get]
 // GetPeople обрабатывает GET-запросна получение списка людей
 func (h *PeopleHandler) GetPeople(w http.ResponseWriter, r *http.Request) {
 	var people []model.Person // сюда загрузим результат
@@ -82,7 +88,15 @@ func NewPeopleHandler(db *gorm.DB) *PeopleHandler {
 	return &PeopleHandler{DB: db}
 }
 
-// CreatePerson обрабатывает POST-запрос на создание человека
+// @Summary Создать нового человека
+// @Description Создаёт человека, обогащает его данными через внешние API и сохраняет в БД
+// @Accept json
+// @Produce json
+// @Param person body model.Person true "Данные человека (только имя, остальные поля дополнятся автоматически)"
+// @Success 201 {object} model.Person
+// @Failure 400 {string} string "Некорректный ввод"
+// @Failure 500 {string} string "Внутренняя ошибка сервера"
+// @Router /people [post]
 func (h *PeopleHandler) CreatePerson(w http.ResponseWriter, r *http.Request) {
 	var input model.Person // Создаем пустую структуру
 

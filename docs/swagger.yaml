@@ -1,9 +1,116 @@
 basePath: /
+definitions:
+  model.Person:
+    type: object
 host: localhost:8080
 info:
   contact: {}
   description: API-сервис для обогащения управления данными пользователя.
   title: People API
   version: "1.0"
-paths: {}
+paths:
+  /people:
+    get:
+      description: Возвращает список всех людей из базы данных
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Person'
+            type: array
+        "500":
+          description: Ошибка при получении данных
+          schema:
+            type: string
+      summary: Получить список людей
+    post:
+      consumes:
+      - application/json
+      description: Создаёт человека, обогащает его данными через внешние API и сохраняет
+        в БД
+      parameters:
+      - description: Данные человека (только имя, остальные поля дополнятся автоматически)
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/model.Person'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Person'
+        "400":
+          description: Некорректный ввод
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: string
+      summary: Создать нового человека
+  /people/{id}:
+    delete:
+      description: Удаляет человека по ID
+      parameters:
+      - description: ID человека
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Успешно удалено
+          schema:
+            type: string
+        "404":
+          description: Человек не найден
+          schema:
+            type: string
+        "500":
+          description: Ошибка при удалении
+          schema:
+            type: string
+      summary: Удалить человека
+    put:
+      consumes:
+      - application/json
+      description: Обновляет информацию о человеке по ID
+      parameters:
+      - description: ID человека
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Обновлённые данные
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/model.Person'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Person'
+        "400":
+          description: Неверные данные
+          schema:
+            type: string
+        "404":
+          description: Человек не найден
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: string
+      summary: Обновить данные человека
 swagger: "2.0"
