@@ -97,7 +97,7 @@ func NewPeopleHandler(db *gorm.DB) *PeopleHandler {
 // @Failure 400 {string} string "Некорректный ввод"
 // @Failure 500 {string} string "Внутренняя ошибка сервера"
 // @Router /people [post]
-func (h *PeopleHandler) CreatePerson(w http.ResponseWriter, r *http.Request) {
+func (h *PeopleHandler) CreateNewPerson(w http.ResponseWriter, r *http.Request) {
 	var input model.Person // Создаем пустую структуру
 
 	// Читаем тело запроса
