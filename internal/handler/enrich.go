@@ -2,12 +2,71 @@ package handler
 
 import (
 	"effective-mobail/internal/model"
+	"effective-mobail/internal/storage"
+	"effective-mobail/pkg/enrich"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 )
 
+// Структура входного JSON запроса
+type enrichRequest struct {
+	Name    string `json:"name"`
+	Surname string `json:"surname"`
+}
+
+// Структура ответа
+type enrichResponse struct {
+	Name        string `json:"name"`
+	Surname     string `json:"surname"`
+	Age         int    `json:"age"`
+	Gender      string `json:"gender"`
+	Nationality string `json:"nationality"`
+}
+
+// Хэндлер для маршрута POST /enrich
+func EnrichHandler(store *storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req enrichRequest
+
+		// 1. Декодируем тело запроса
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "неправильный формат запроса", http.StatusBadRequest)
+			return
+		}
+
+		// 2. Обогощаем имя через внешние API
+		data, err := enrich.Enrich(req.Name)
+		if err != nil {
+			http.Error(w, "не удалось обогатить данные:"+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// 3. Сохраняем результат в БД
+		person := model.Person{
+			Name:        req.Name,
+			Surname:     req.Surname,
+			Age:         &data.Age,
+			Gender:      &data.Gender,
+			Nationality: &data.Nationality,
+		}
+		if err := store.SavePerson(&person); err != nil {
+			http.Error(w, "ошибка при сохранение в БД:"+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// 4. Возвращаем клиенту ответ
+		resp := enrichResponse{
+			Name:        person.Name,
+			Age:         data.Age,
+			Gender:      data.Gender,
+			Nationality: data.Nationality,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+	}
+}
 func EnrichPerson(p model.Person) model.Person {
 	name := p.Name
 	// Получаем возраст

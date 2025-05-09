@@ -9,6 +9,14 @@ import (
 	"log"
 )
 
+type Storage struct {
+	DB *gorm.DB
+}
+
+func (s *Storage) SavePerson(p *model.Person) error {
+	return s.DB.Create(p).Error // 👈 теперь мы сохраняем через GORM
+}
+
 func InitPostgres(cfg *config.Config) *gorm.DB {
 	// Строка подключения к PostgreSQL
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", cfg.DBHost, cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBPort)

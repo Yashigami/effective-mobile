@@ -27,8 +27,18 @@ func (h *PeopleHandler) CreatePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Примитивная валидация
+	if len(person.Name) < 2 {
+		http.Error(w, "Имя слишком короткое", http.StatusBadRequest)
+		return
+	}
 
-	// Валидируем поля структуры (используем валидатор)
+	if person.Age != nil && *person.Age < 0 {
+		http.Error(w, "Возраст не может быть отрицательным", http.StatusBadRequest)
+		return
+	}
+
+	// Валидируем поля структуры
 	if err := validate.Struct(person); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

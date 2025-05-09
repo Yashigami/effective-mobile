@@ -34,6 +34,7 @@ func main() {
 	r.HandleFunc("/people", h.GetPeople).Methods("GET")
 	r.HandleFunc("/people/{id}", h.UpdatePerson).Methods("PUT")
 	r.HandleFunc("/people/{id}", h.DeletePerson).Methods("DELETE")
+	r.Use(loggingMiddleware)
 
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
@@ -42,4 +43,11 @@ func main() {
 	if err != nil {
 		log.Fatal("не удалось запустить сервер: %v", err)
 	}
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s %s", r.Method, r.RequestURI, r.RemoteAddr)
+		next.ServeHTTP(w, r)
+	})
 }

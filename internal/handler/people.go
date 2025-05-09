@@ -123,7 +123,7 @@ func (h *PeopleHandler) CreateNewPerson(w http.ResponseWriter, r *http.Request) 
 	// Обогащение через API
 	enrichedPerson := EnrichPerson(input)
 
-	// Сохранаю в базу
+	// Сохраняю в базу
 	result := h.DB.Create(&enrichedPerson)
 	if result.Error != nil {
 		http.Error(w, "Ошибка при сохранение в БД", http.StatusInternalServerError)
